@@ -633,7 +633,7 @@ const handleSearch = async (searchQuery = query) => {
               <small>
                 <button 
                   className="btn btn-sm btn-outline-primary"
-                  onClick={() => window.open('http://localhost:5001/api/ai/test', '_blank')}
+                 onClick={() => window.open('https://ai-lms-ai.onrender.com/api/ai/test', '_blank')}
                 >
                   <i className="fas fa-external-link-alt me-1"></i>
                   API Status

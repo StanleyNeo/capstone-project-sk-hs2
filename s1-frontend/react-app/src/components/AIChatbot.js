@@ -365,7 +365,7 @@ const testAIConnection = async () => {
     setMessages(prev => [...prev, testMessage]);
 
     // Test actual AI response
-    const response = await fetch('http://localhost:5001/api/ai/chat', {
+    const response = await fetch('https://ai-lms-ai.onrender.com/api/ai/chat', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ 
