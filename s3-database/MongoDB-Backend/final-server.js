@@ -2,23 +2,33 @@ const express = require('express');
 const mongoose = require('mongoose');
 const cors = require('cors');
 const app = express();
-const PORT = 5000;
+// ✅ Use dynamic port for Render:
+const PORT = process.env.PORT || 5000;
 
-// ========== ✅ MIDDLEWARE ==========
+// ✅ UPDATED CORS for Vercel:
 app.use(cors({
-  origin: ['http://localhost:3000', 'http://127.0.0.1:3000', 'http://localhost:3001'],
+  origin: [
+    'http://localhost:3000',
+    'http://127.0.0.1:3000',
+    'http://localhost:3001',
+    'https://capstone-project-sk-hs.vercel.app',
+    'https://capstone-project-sk-hs-git-main-neo-see-kwees-projects.vercel.app'
+  ],
   credentials: true,
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
   allowedHeaders: ['Content-Type', 'Authorization', 'Accept']
 }));
+
 app.use(express.json());
 
-// ========== ✅ MONGODB CONNECTION ==========
-mongoose.connect('mongodb://localhost:27017/lms_analytics', {
+// ✅ NEW (Replace with this):
+const mongoURI = process.env.MONGODB_URI || 'mongodb://localhost:27017/lms_analytics';
+mongoose.connect(mongoURI, {
   useNewUrlParser: true,
   useUnifiedTopology: true,
-  serverSelectionTimeoutMS: 5000
+  serverSelectionTimeoutMS: 10000
 });
+
 const db = mongoose.connection;
 db.on('error', () => console.log('⚠️ MongoDB not available - using in-memory data'));
 db.once('open', () => console.log('✅ MongoDB connected to lms_analytics'));
