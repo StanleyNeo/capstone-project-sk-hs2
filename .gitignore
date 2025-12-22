@@ -1,0 +1,7 @@
+# AI LMS Capstone Project
+# Global ignores
+.DS_Store
+Thumbs.db
+*.log
+.env
+node_modules/

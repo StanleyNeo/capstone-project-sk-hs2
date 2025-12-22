@@ -1,0 +1,5 @@
+# MongoDB backend
+node_modules/
+.env
+logs/
+data/
