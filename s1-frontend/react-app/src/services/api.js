@@ -48,43 +48,47 @@ static async quickHealthCheck() {
   }
 }
 
-  // ========== COURSES (Port 5001) ==========
+// ========== COURSES ==========
 static async getCourses() {
   try {
-    // ❌ WRONG: Uses Port 5001 (AI server doesn't have courses)
-    const response = await fetch(`${COURSES_API_URL}/api/ai`);
+    // ✅ CORRECT: Use Analytics backend for courses
+    const response = await fetch(`${SCHOOLS_API_URL}/api/courses`);
     const data = await response.json();
-    return data.success ? data.data || data.courses : [];
+    return data.success ? data.data || [] : [];
   } catch (error) {
     console.error('Error fetching courses:', error);
     return [];
   }
 }
 
-  static async getCourseById(id) {
-    try {
-      const response = await fetch(`${COURSES_API_URL}/courses/${id}`);
-      const data = await response.json();
-      return data.success ? data.data : null;
-    } catch (error) {
-      console.error('Error fetching course:', error);
-      return null;
-    }
+static async getCourseById(id) {
+  try {
+    // ✅ CORRECT: Use Analytics backend
+    const response = await fetch(`${SCHOOLS_API_URL}/api/courses/${id}`);
+    const data = await response.json();
+    return data.success ? data.data : null;
+  } catch (error) {
+    console.error('Error fetching course:', error);
+    return null;
   }
+}
 
-  static async enrollCourse(userId, courseId) {
-    try {
-      const response = await fetch(`${COURSES_API_URL}/enroll`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ userId, courseId })
-      });
-      return await response.json();
-    } catch (error) {
-      console.error('Error enrolling:', error);
-      return { success: false, error: 'Enrollment failed' };
-    }
+static async enrollCourse(userId, courseId) {
+  try {
+    // Check which backend has this endpoint
+    // If Analytics: `${SCHOOLS_API_URL}/api/enrollments`
+    // If AI: `${COURSES_API_URL}/enroll`
+    const response = await fetch(`${SCHOOLS_API_URL}/api/enrollments`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ userId, courseId })
+    });
+    return await response.json();
+  } catch (error) {
+    console.error('Error enrolling:', error);
+    return { success: false, error: 'Enrollment failed' };
   }
+}
 
   // ========== AI & CHATBOT (Port 5001) ==========
 // Get AI recommendations
@@ -409,24 +413,24 @@ static async getCoursesFromAnalytics() {
   //   }
   // }
 
-  // ========== HEALTH CHECKS ==========
-  static async checkCoursesBackend() {
-    try {
-      const response = await fetch(`${COURSES_API_URL}/health`);
-      return await response.json();
-    } catch (error) {
-      return { success: false, status: 'unavailable' };
-    }
+// ========== HEALTH CHECKS ==========
+static async checkCoursesBackend() {
+  try {
+    const response = await fetch(`${COURSES_API_URL}/api/health`);
+    return await response.json();
+  } catch (error) {
+    return { success: false, status: 'unavailable' };
   }
+}
 
-  static async checkAnalyticsBackend() {
-    try {
-      const response = await fetch(`${SCHOOLS_API_URL}/health`);
-      return await response.json();
-    } catch (error) {
-      return { success: false, status: 'unavailable' };
-    }
+static async checkAnalyticsBackend() {
+  try {
+    const response = await fetch(`${SCHOOLS_API_URL}/api/health`);
+    return await response.json();
+  } catch (error) {
+    return { success: false, status: 'unavailable' };
   }
+}
 
   // ========== TEST CONNECTIONS ==========
   static async testConnections() {
