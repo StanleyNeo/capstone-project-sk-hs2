@@ -305,7 +305,7 @@ const handleAISearch = async (query) => {
     setAiResponse('');
     
     // Try the AI backend first (port 5001)
-    const aiResponse = await fetch('http://localhost:5001/api/chat', {
+    const aiResponse = await fetch(`${COURSES_API_URL}/api/chat`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ message: query })
@@ -318,7 +318,7 @@ const handleAISearch = async (query) => {
     }
     
     // Also search for courses in MongoDB (port 5000)
-    const coursesResponse = await fetch(`http://localhost:5000/api/search/courses?q=${query}`);
+    const coursesResponse = await fetch(`${COURSES_API_URL}/api/search/courses?q=${query}`);
     const coursesData = await coursesResponse.json();
     
     if (coursesData.success && coursesData.results.length > 0) {

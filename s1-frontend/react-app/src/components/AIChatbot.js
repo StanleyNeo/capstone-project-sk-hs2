@@ -252,7 +252,7 @@ const sendToAI = async (messageText, searchResults = []) => {
   try {
     console.log(`📤 Sending to AI Backend: ${messageText} (provider: ${aiProvider})`);
     
-    const response = await fetch('http://localhost:5001/api/ai/chat', {
+    const response = await fetch(`${COURSES_API_URL}/api/ai/chat`, {
       method: 'POST',
       headers: { 
         'Content-Type': 'application/json',

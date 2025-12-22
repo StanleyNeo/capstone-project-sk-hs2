@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import './SmartSearch.css'; // We'll create this CSS file
-const BASE_URL = 'http://localhost:5001/api/ai'; // Changed from port 5000
+const BASE_URL = process.env.REACT_APP_AI_API_URL + '/api/ai' || 'https://ai-lms-ai.onrender.com/api/ai';
 function SmartSearch() {
   const [query, setQuery] = useState('');
   const [results, setResults] = useState([]);
