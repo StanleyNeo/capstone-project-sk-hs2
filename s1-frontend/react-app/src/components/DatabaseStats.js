@@ -365,8 +365,7 @@ const tryBasicStatsFallback = async () => {
             <strong>⚠️ Warning:</strong> {error}
             <div className="mt-2">
               <small>
-                Backend: <a href="https://ai-lms-analytics.onrender.com" target="_blank" rel="noreferrer">
-https://ai-lms-analytics.onrender.com</a>| 
+                Backend: <a href="http://localhost:5000" target="_blank" rel="noreferrer">http://localhost:5000</a> | 
                 Check if MongoDB Analytics Backend is running.
               </small>
             </div>
@@ -634,9 +633,7 @@ https://ai-lms-analytics.onrender.com</a>|
           <div className="d-flex justify-content-between align-items-center">
             <div className="text-muted">
               <small>
-                Backend: <a href="https://ai-lms-analytics.onrender.com" target="_blank" rel="noreferrer">
-  Analytics Backend
-</a>
+                Backend: <a href="http://localhost:5000" target="_blank" rel="noreferrer">Port 5000</a>
                 <br />
                 Status: <span className={`badge ${backendStatus === 'connected' ? 'bg-success' : 'bg-warning'}`}>
                   {backendStatus}

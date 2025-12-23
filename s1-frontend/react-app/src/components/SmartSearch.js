@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import './SmartSearch.css'; // We'll create this CSS file
-const BASE_URL = 'https://ai-lms-ai.onrender.com/api/ai';
+const BASE_URL = 'http://localhost:5001/api/ai'; // Changed from port 5000
 function SmartSearch() {
   const [query, setQuery] = useState('');
   const [results, setResults] = useState([]);
@@ -171,7 +171,7 @@ const handleSearch = async (searchQuery = query) => {
     }
   } catch (error) {
     console.error('Search error:', error);
-    setError('Failed to connect to AI backend. Please check if AI service is running.');
+    setError('Failed to connect to AI backend. Please check if port 5001 is running.');
     setResults([]);
   } finally {
     setLoading(false);
@@ -633,7 +633,7 @@ const handleSearch = async (searchQuery = query) => {
               <small>
                 <button 
                   className="btn btn-sm btn-outline-primary"
-                 onClick={() => window.open('https://ai-lms-ai.onrender.com/api/ai/test', '_blank')}
+                  onClick={() => window.open('http://localhost:5001/api/ai/test', '_blank')}
                 >
                   <i className="fas fa-external-link-alt me-1"></i>
                   API Status

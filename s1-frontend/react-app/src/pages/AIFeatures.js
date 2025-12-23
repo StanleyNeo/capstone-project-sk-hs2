@@ -246,7 +246,7 @@ function AIFeatures() {
                   </div>
                 </div>
                 <a 
-                  href="https://ai-lms-analytics.onrender.com/api/search/health"
+                  href="http://localhost:5000/api/search/health" 
                   target="_blank" 
                   rel="noopener noreferrer"
                   className="btn btn-sm btn-outline-dark w-100"

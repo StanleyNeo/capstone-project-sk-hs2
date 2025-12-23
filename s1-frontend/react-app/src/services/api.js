@@ -1,13 +1,15 @@
 // const COURSES_API_URL = 'http://localhost:5001';  // AI LMS Backend
 // const SCHOOLS_API_URL = 'http://localhost:5000';  // MongoDB Analytics Backend
+// ✅ Use environment variables for Vercel
+<<<<<<< HEAD
 
-// CORRECT configuration for Vercel deployment:
+=======
+// ✅ 正确：使用 process.env.
+>>>>>>> c9ea49f7a63a6c29b44ccdb9d6c668e046b47734
 const COURSES_API_URL = process.env.REACT_APP_AI_API_URL || 'https://ai-lms-ai.onrender.com';
 const SCHOOLS_API_URL = process.env.REACT_APP_ANALYTICS_API_URL || 'https://ai-lms-analytics.onrender.com';
 
-// ✅ Update to use the analytics backend:
-const API_BASE = SCHOOLS_API_URL + '/api';  // or just remove if not needed
-
+const API_BASE = 'http://localhost:5000/api';
 class ApiService {
   // ========== AUTHENTICATION (Port 5001) ==========
   static async register(userData) {
@@ -40,62 +42,57 @@ class ApiService {
 
 static async quickHealthCheck() {
   try {
-    // ✅ CORRECTED: Use COURSES_API_URL instead of localhost:5001
-    const response = await fetch(`${COURSES_API_URL}/api/ai/ping`);
+    // Quick ping without loading stats
+    const response = await fetch('http://localhost:5001/api/ai/ping');
     return await response.json();
   } catch (error) {
     return { success: false, status: 'AI service unavailable' };
   }
 }
 
-// ========== COURSES ==========
+  // ========== COURSES (Port 5001) ==========
 static async getCourses() {
   try {
-    // ✅ CORRECT: Use Analytics backend for courses
-    const response = await fetch(`${SCHOOLS_API_URL}/api/courses`);
+    // ❌ WRONG: Uses Port 5001 (AI server doesn't have courses)
+    const response = await fetch(`${COURSES_API_URL}/api/ai`);
     const data = await response.json();
-    return data.success ? data.data || [] : [];
+    return data.success ? data.data || data.courses : [];
   } catch (error) {
     console.error('Error fetching courses:', error);
     return [];
   }
 }
 
-static async getCourseById(id) {
-  try {
-    // ✅ CORRECT: Use Analytics backend
-    const response = await fetch(`${SCHOOLS_API_URL}/api/courses/${id}`);
-    const data = await response.json();
-    return data.success ? data.data : null;
-  } catch (error) {
-    console.error('Error fetching course:', error);
-    return null;
+  static async getCourseById(id) {
+    try {
+      const response = await fetch(`${COURSES_API_URL}/courses/${id}`);
+      const data = await response.json();
+      return data.success ? data.data : null;
+    } catch (error) {
+      console.error('Error fetching course:', error);
+      return null;
+    }
   }
-}
 
-static async enrollCourse(userId, courseId) {
-  try {
-    // Check which backend has this endpoint
-    // If Analytics: `${SCHOOLS_API_URL}/api/enrollments`
-    // If AI: `${COURSES_API_URL}/enroll`
-    const response = await fetch(`${SCHOOLS_API_URL}/api/enrollments`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ userId, courseId })
-    });
-    return await response.json();
-  } catch (error) {
-    console.error('Error enrolling:', error);
-    return { success: false, error: 'Enrollment failed' };
+  static async enrollCourse(userId, courseId) {
+    try {
+      const response = await fetch(`${COURSES_API_URL}/enroll`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ userId, courseId })
+      });
+      return await response.json();
+    } catch (error) {
+      console.error('Error enrolling:', error);
+      return { success: false, error: 'Enrollment failed' };
+    }
   }
-}
 
   // ========== AI & CHATBOT (Port 5001) ==========
 // Get AI recommendations
 static async getAiRecommendations(interest, level) {
   try {
-    // ✅ CORRECTED: Use COURSES_API_URL instead of localhost:5001
-    const response = await fetch(`${COURSES_API_URL}/api/ai/recommend`, {
+    const response = await fetch('http://localhost:5001/api/ai/recommend', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -413,10 +410,11 @@ static async getCoursesFromAnalytics() {
   //   }
   // }
 
-// ========== HEALTH CHECKS ==========
+  // ========== HEALTH CHECKS ==========
+
 static async checkCoursesBackend() {
   try {
-    const response = await fetch(`${COURSES_API_URL}/api/health`);
+    const response = await fetch(`${COURSES_API_URL}/api/health`);  // ✅ 添加 /api/
     return await response.json();
   } catch (error) {
     return { success: false, status: 'unavailable' };
@@ -425,7 +423,7 @@ static async checkCoursesBackend() {
 
 static async checkAnalyticsBackend() {
   try {
-    const response = await fetch(`${SCHOOLS_API_URL}/api/health`);
+    const response = await fetch(`${SCHOOLS_API_URL}/api/health`);  // ✅ 添加 /api/
     return await response.json();
   } catch (error) {
     return { success: false, status: 'unavailable' };

@@ -9,8 +9,6 @@ import { Link } from 'react-router-dom';
 import SmartSearch from '../components/SmartSearch';
 
 function Home() {
-  const [searchLoading, setSearchLoading] = useState(false);
-  const [aiResponse, setAiResponse] = useState(null);
   const { currentUser, isAuthenticated } = useAuth();
   const [courses, setCourses] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -79,16 +77,48 @@ function Home() {
 const handleGetRecommendation = async () => {
   if (interest.trim()) {
     try {
-      // ✅ Use existing ApiService (handles fallback + error resilience)
-      const result = await ApiService.getAiRecommendations(interest, level);
-      
-      setRecommendation({
-        message: result.message || `Found ${result.recommendations?.length || 0} recommendations`,
-        recommendations: result.recommendations || result.courses || []
+      // Use the new API endpoint
+      const response = await fetch('http://localhost:5001/api/ai/recommend', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ 
+          interest: interest, 
+          level: level 
+        })
       });
+      
+      const data = await response.json();
+      
+      if (data.success) {
+        setRecommendation({
+          message: data.message || `Found ${data.recommendations?.length || 0} recommendations`,
+          recommendations: data.recommendations || []
+        });
+      } else {
+        throw new Error(data.error || 'Failed to get recommendations');
+      }
     } catch (error) {
-      console.error('Recommendation failed:', error);
-      // Already handled in ApiService → fallback courses
+      console.error('Recommendation error:', error);
+      // Fallback to local recommendations
+      setRecommendation({
+        message: "Using local recommendations",
+        recommendations: [
+          {
+            id: '1',
+            title: 'Python Programming',
+            description: 'Learn Python programming from scratch',
+            level: 'Beginner',
+            category: 'Programming'
+          },
+          {
+            id: '2',
+            title: 'Web Development Fundamentals',
+            description: 'Learn HTML, CSS, and JavaScript',
+            level: 'Beginner',
+            category: 'Web Development'
+          }
+        ]
+      });
     }
   }
 };
@@ -103,35 +133,6 @@ const handleGetRecommendation = async () => {
       </div>
     );
   }
-
-  const handleAISearch = async (query) => {
-    try {
-      setSearchLoading(true);
-      setAiResponse('');
-
-      const aiRes = await fetch(`${process.env.REACT_APP_AI_API_URL || 'http://localhost:5001'}/api/chat`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ message: query })
-      });
-
-      const aiData = await aiRes.json();
-
-      if (aiData.success) {
-        setAiResponse(aiData.response);
-      }
-
-    } catch (error) {
-      console.error('AI Search error:', error);
-      setAiResponse(
-        'Suggested courses:\n• Web Development Fundamentals\n• Data Science with Python\n• Machine Learning Fundamentals'
-      );
-    } finally {
-      setSearchLoading(false);
-    }
-  };
-
-
 
   return (
     <div className="container mt-4">
@@ -293,28 +294,33 @@ const handleGetRecommendation = async () => {
       </div>
 
       {/* Featured Courses */}
-      {Array.isArray(courses) && courses.length > 0 ? (
-        <div className="row">
-          {courses.slice(0, 3).map(course => (
-            <div className="col-md-4" key={course.id || course.courseId}>
-              <div className="card h-100">
-                <div className="card-body">
-                  <h5 className="card-title">{course.name || course.title}</h5>
-                  <p className="card-text">{(course.description || '').substring(0, 100)}...</p>
-                  <div className="d-flex justify-content-between align-items-center">
-                    <span className="badge bg-secondary">{course.level || 'Beginner'}</span>
-                    <span className="text-primary fw-bold">{course.price || 'Free'}</span>
+      <div className="card mb-4">
+        <div className="card-body">
+          <h3 className="card-title">Featured Courses</h3>
+          {courses.length === 0 ? (
+            <div className="alert alert-warning">
+              No courses available. Please check backend connection.
+            </div>
+          ) : (
+            <div className="row">
+              {courses.slice(0, 3).map(course => (
+                <div className="col-md-4" key={course.id || course.courseId}>
+                  <div className="card h-100">
+                    <div className="card-body">
+                      <h5 className="card-title">{course.name || course.title}</h5>
+                      <p className="card-text">{(course.description || '').substring(0, 100)}...</p>
+                      <div className="d-flex justify-content-between align-items-center">
+                        <span className="badge bg-secondary">{course.level || 'Beginner'}</span>
+                        <span className="text-primary fw-bold">{course.price || 'Free'}</span>
+                      </div>
+                    </div>
                   </div>
                 </div>
-              </div>
+              ))}
             </div>
-          ))}
+          )}
         </div>
-      ) : (
-        <div className="alert alert-warning">
-          No courses available. Please check backend connection.
-        </div>
-      )}
+      </div>
 
       {/* Practice Components */}
       <div className="row mb-4">
@@ -327,10 +333,46 @@ const handleGetRecommendation = async () => {
       </div>
     </div>
   );
-
-
 }
 
-
+// Add this function in your Home.js
+const handleAISearch = async (query) => {
+  try {
+    setSearchLoading(true);
+    setAiResponse('');
+    
+    // Try the AI backend first (port 5001)
+    const aiResponse = await fetch('http://localhost:5001/api/chat', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ message: query })
+    });
+    
+    const aiData = await aiResponse.json();
+    
+    if (aiData.success) {
+      setAiResponse(aiData.response);
+    }
+    
+    // Also search for courses in MongoDB (port 5000)
+    const coursesResponse = await fetch(`http://localhost:5000/api/search/courses?q=${query}`);
+    const coursesData = await coursesResponse.json();
+    
+    if (coursesData.success && coursesData.results.length > 0) {
+      // Format courses as a list
+      const coursesList = coursesData.results.map(course => 
+        `• ${course.title} (${course.level}) - ${course.description.substring(0, 100)}...`
+      ).join('\n');
+      
+      setAiResponse(prev => prev + `\n\n**Found ${coursesData.results.length} courses:**\n${coursesList}`);
+    }
+    
+  } catch (error) {
+    console.error('AI Search error:', error);
+    setAiResponse('I found these courses for you:\n• Web Development Fundamentals (Beginner)\n• Data Science with Python (Intermediate)\n• Machine Learning Fundamentals (Advanced)');
+  } finally {
+    setSearchLoading(false);
+  }
+};
 
 export default Home;
